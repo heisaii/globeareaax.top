@@ -12,7 +12,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1] / "site"
 PUBLISHER_ID = "wansheng-network"
-LAYOUT_MARKER = "<!-- taboola-layout:screenshot-d -->"
+LAYOUT_MARKER = "<!-- taboola-layout:screenshot-e -->"
 
 ADSENSE_LOADER_RE = re.compile(
     r"<script\b[^>]*\bsrc=(['\"])[^'\"]*pagead2\.googlesyndication\.com/pagead/js/adsbygoogle\.js[^'\"]*\1[^>]*>\s*</script>",
@@ -67,8 +67,8 @@ def head_code(page_type: str) -> str:
     display: block;
     width: 100% !important;
     max-width: 100% !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
     overflow: hidden !important;
   }}
   .taboola-placement > div,
@@ -81,6 +81,8 @@ def head_code(page_type: str) -> str:
     min-width: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
     overflow: hidden !important;
   }}
   .taboola-placement [style*="width"],
@@ -89,11 +91,17 @@ def head_code(page_type: str) -> str:
     box-sizing: border-box !important;
     min-width: 0 !important;
     max-width: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    float: none !important;
   }}
   .taboola-placement img,
   .taboola-placement video {{
+    display: block !important;
     max-width: 100% !important;
     height: auto !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
   }}
   @media (max-width: 767px) {{
     .blog-over-single-content-box {{
@@ -107,8 +115,8 @@ def head_code(page_type: str) -> str:
     .taboola-placement .syndicatedItem,
     .taboola-placement .tbl-feed-card {{
       width: 100% !important;
-      margin-left: 0 !important;
-      margin-right: 0 !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
     }}
   }}
 </style>
