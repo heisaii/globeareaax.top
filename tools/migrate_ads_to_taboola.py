@@ -12,7 +12,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1] / "site"
 PUBLISHER_ID = "wansheng-network"
-LAYOUT_MARKER = "<!-- taboola-layout:screenshot-c -->"
+LAYOUT_MARKER = "<!-- taboola-layout:screenshot-d -->"
 
 ADSENSE_LOADER_RE = re.compile(
     r"<script\b[^>]*\bsrc=(['\"])[^'\"]*pagead2\.googlesyndication\.com/pagead/js/adsbygoogle\.js[^'\"]*\1[^>]*>\s*</script>",
@@ -78,6 +78,7 @@ def head_code(page_type: str) -> str:
   .taboola-placement .trc_related_container,
   .taboola-placement .tbl-feed-container {{
     box-sizing: border-box !important;
+    min-width: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
     overflow: hidden !important;
@@ -86,6 +87,7 @@ def head_code(page_type: str) -> str:
   .taboola-placement .videoCube,
   .taboola-placement .tbl-feed-card {{
     box-sizing: border-box !important;
+    min-width: 0 !important;
     max-width: 100% !important;
   }}
   .taboola-placement img,
@@ -94,6 +96,9 @@ def head_code(page_type: str) -> str:
     height: auto !important;
   }}
   @media (max-width: 767px) {{
+    .blog-over-single-content-box {{
+      overflow-x: hidden;
+    }}
     .taboola-placement {{
       margin-top: 24px !important;
       margin-bottom: 24px !important;
