@@ -12,6 +12,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1] / "site"
 PUBLISHER_ID = "wansheng-network"
+LAYOUT_MARKER = "<!-- taboola-layout:screenshot-a -->"
 
 ADSENSE_LOADER_RE = re.compile(
     r"<script\b[^>]*\bsrc=(['\"])[^'\"]*pagead2\.googlesyndication\.com/pagead/js/adsbygoogle\.js[^'\"]*\1[^>]*>\s*</script>",
@@ -46,6 +47,7 @@ TABOOLA_MARKER_RE = re.compile(
     r"<!-- taboola:[^>]+ -->.*?<!-- /taboola:[^>]+ -->",
     re.IGNORECASE | re.DOTALL,
 )
+LAYOUT_MARKER_RE = re.compile(r"\s*<!-- taboola-layout:[^>]+ -->", re.IGNORECASE)
 
 ENCODED_AD_MARKERS = (
     "ai_front",
@@ -57,7 +59,8 @@ ENCODED_AD_MARKERS = (
 
 
 def head_code(page_type: str) -> str:
-    return f"""<!-- taboola:head-{page_type} -->
+    return f"""{LAYOUT_MARKER}
+<!-- taboola:head-{page_type} -->
 <script id="taboola-loader">
 (function () {{
     var PUBLISHER_ID = '{PUBLISHER_ID}';
@@ -215,29 +218,31 @@ def transform(path: Path, original: str) -> tuple[str, int, str | None]:
             "flush",
         )
 
-    taboola_complete = bool(expected_markers) and all(
+    taboola_complete = LAYOUT_MARKER in original and bool(expected_markers) and all(
         original.count(f"<!-- taboola:{marker} -->") == 1
         and original.count(f"<!-- /taboola:{marker} -->") == 1
         for marker in expected_markers
     )
     text = original if taboola_complete else TABOOLA_MARKER_RE.sub("", original)
+    if not taboola_complete:
+        text = LAYOUT_MARKER_RE.sub("", text)
     text, removed = remove_google_ads(text)
 
     if page_type == "homepage" and not taboola_complete:
         text = insert_before_close(text, "head", head_code(page_type))
         text, first_count = re.subn(
-            r"</div>(\s*<nav class=['\"]blog-over-pagination['\"])",
-            "</div>\n" + HOME_WIDGET + r"\n\1",
+            r"(<div class=['\"]blog-over-page-header-container['\"]></div>\s*<div class=['\"]blog-over-container['\"]>)",
+            r"\1\n" + HOME_WIDGET,
             text,
             count=1,
             flags=re.IGNORECASE,
         )
         text, feed_count = re.subn(
-            r"</div>(\s*<aside class=['\"]blog-over-sidebar['\"])",
-            HOME_FEED + r"\n</div>\1",
+            r"(<article\b[^>]*\bblog-over-modern-card\b.*?</article>\s*<article\b[^>]*\bblog-over-modern-card\b.*?</article>)",
+            r"\1\n" + HOME_FEED,
             text,
             count=1,
-            flags=re.IGNORECASE,
+            flags=re.IGNORECASE | re.DOTALL,
         )
         if first_count != 1 or feed_count != 1:
             raise ValueError(f"Homepage placement anchors missing in {path}")
@@ -245,15 +250,39 @@ def transform(path: Path, original: str) -> tuple[str, int, str | None]:
 
     elif page_type == "article" and not taboola_complete:
         text = insert_before_close(text, "head", head_code(page_type))
-        placements = "\n".join((ARTICLE_WIDGET_1, ARTICLE_WIDGET_2, ARTICLE_FEED))
-        text, count = re.subn(
-            r"</div>(\s*<div class=['\"]blog-over-share-buttons['\"])",
-            "</div>\n" + placements + r"\n\1",
+        text, title_count = re.subn(
+            r"(</h1>)(\s*<div class=['\"]blog-over-single-meta['\"])",
+            r"\1\n" + ARTICLE_WIDGET_1 + r"\n\2",
             text,
             count=1,
             flags=re.IGNORECASE,
         )
-        if count != 1:
+        text, paragraph_count = re.subn(
+            r"(<div class=['\"]blog-over-single-content['\"][^>]*>.*?<p\b.*?</p>)",
+            r"\1\n" + ARTICLE_WIDGET_2,
+            text,
+            count=1,
+            flags=re.IGNORECASE | re.DOTALL,
+        )
+        # Most articles expose a share-buttons block immediately after the
+        # article content.  Some older exports omit it and move straight to
+        # the tag block, so accept that equivalent end-of-article anchor too.
+        text, feed_count = re.subn(
+            r"</div>(\s*<div class=['\"]blog-over-share-buttons['\"])",
+            "</div>\n" + ARTICLE_FEED + r"\n\1",
+            text,
+            count=1,
+            flags=re.IGNORECASE,
+        )
+        if feed_count == 0:
+            text, feed_count = re.subn(
+                r"</div>(\s*<div class=['\"]blog-over-single-tags['\"])",
+                "</div>\n" + ARTICLE_FEED + r"\n\1",
+                text,
+                count=1,
+                flags=re.IGNORECASE,
+            )
+        if title_count != 1 or paragraph_count != 1 or feed_count != 1:
             raise ValueError(f"Article placement anchor missing in {path}")
         text = insert_before_close(text, "body", FLUSH_CODE)
 
