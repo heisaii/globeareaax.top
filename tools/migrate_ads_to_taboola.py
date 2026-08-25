@@ -12,7 +12,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1] / "site"
 PUBLISHER_ID = "wansheng-network"
-LAYOUT_MARKER = "<!-- taboola-layout:screenshot-a -->"
+LAYOUT_MARKER = "<!-- taboola-layout:screenshot-b -->"
 
 ADSENSE_LOADER_RE = re.compile(
     r"<script\b[^>]*\bsrc=(['\"])[^'\"]*pagead2\.googlesyndication\.com/pagead/js/adsbygoogle\.js[^'\"]*\1[^>]*>\s*</script>",
@@ -150,7 +150,7 @@ ARTICLE_WIDGET_2 = placement_code(
 ARTICLE_FEED = placement_code(
     "article-page-feed",
     "taboola-article-page-feed",
-    "alternating-thumbnails-a",
+    "thumbnails-a-1x1",
     "Article page Feed",
 )
 
