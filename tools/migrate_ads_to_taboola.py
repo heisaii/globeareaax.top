@@ -12,7 +12,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1] / "site"
 PUBLISHER_ID = "wansheng-network"
-LAYOUT_MARKER = "<!-- taboola-layout:screenshot-b -->"
+LAYOUT_MARKER = "<!-- taboola-layout:screenshot-c -->"
 
 ADSENSE_LOADER_RE = re.compile(
     r"<script\b[^>]*\bsrc=(['\"])[^'\"]*pagead2\.googlesyndication\.com/pagead/js/adsbygoogle\.js[^'\"]*\1[^>]*>\s*</script>",
@@ -61,6 +61,52 @@ ENCODED_AD_MARKERS = (
 def head_code(page_type: str) -> str:
     return f"""{LAYOUT_MARKER}
 <!-- taboola:head-{page_type} -->
+<style id="taboola-layout-guard">
+  .taboola-placement {{
+    box-sizing: border-box !important;
+    display: block;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    overflow: hidden !important;
+  }}
+  .taboola-placement > div,
+  .taboola-placement iframe,
+  .taboola-placement .trc_rbox,
+  .taboola-placement .trc_rbox_container,
+  .taboola-placement .trc_related_container,
+  .taboola-placement .tbl-feed-container {{
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+  }}
+  .taboola-placement [style*="width"],
+  .taboola-placement .videoCube,
+  .taboola-placement .tbl-feed-card {{
+    box-sizing: border-box !important;
+    max-width: 100% !important;
+  }}
+  .taboola-placement img,
+  .taboola-placement video {{
+    max-width: 100% !important;
+    height: auto !important;
+  }}
+  @media (max-width: 767px) {{
+    .taboola-placement {{
+      margin-top: 24px !important;
+      margin-bottom: 24px !important;
+    }}
+    .taboola-placement .videoCube,
+    .taboola-placement .syndicatedItem,
+    .taboola-placement .tbl-feed-card {{
+      width: 100% !important;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+    }}
+  }}
+</style>
 <script id="taboola-loader">
 (function () {{
     var PUBLISHER_ID = '{PUBLISHER_ID}';
